@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  {% load static %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Дэлэй Маркет{% endblock %}</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap">
+  <style>
+    @font-face {
+      font-family: 'Rennie';
+      src: url("{% static 'fonts/Rennie.ttf' %}") format('truetype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    html, body {
+      font-family: 'Poppins', Arial, Helvetica, sans-serif !important;
+    }
+    * {
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+    .logo-font {
+      font-family: 'Rennie', 'Poppins', Arial, Helvetica, sans-serif !important;
+      letter-spacing: 0.06em;
+      font-weight: 400;
+    }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-neutral-950 text-white text-base">
+  <div class="h-full min-h-screen bg-neutral-950">
+    <!-- Navbar -->
+    <div class="flex h-20 px-8 py-4">
+      <div class="flex max-w-3xs items-center gap-2">
+        {% include "marketplace/parts/logo_pair.html" %}
+      </div>
+      <div class="flex w-full items-center justify-end gap-4">
+        <button class="flex cursor-pointer items-center gap-2 text-white/50 transition-all hover:text-white">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="text-white h-6 w-6">
+            <path fill-rule="evenodd" d="M18.685 19.097A9.723 9.723 0 0 0 21.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 0 0 3.065 7.097A9.716 9.716 0 0 0 12 21.75a9.716 9.716 0 0 0 6.685-2.653Zm-12.54-1.285A7.486 7.486 0 0 1 12 15a7.486 7.486 0 0 1 5.855 2.812A8.224 8.224 0 0 1 12 20.25a8.224 8.224 0 0 1-5.855-2.438ZM15.75 9a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" clip-rule="evenodd" />
+          </svg>
+          <span>Войти</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="flex h-full gap-4 px-8 pb-8">
+      <!-- Sidebar -->
+      <div class="w-full max-w-64 space-y-4">
+        {% include "marketplace/parts/sidebar.html" %}
+      </div>
+      <!-- Main container -->
+      <div class="h-full w-full rounded-2xl bg-neutral-900/40">
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+  </div>
+</body>
+</html>
