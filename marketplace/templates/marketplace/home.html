@@ -35,8 +35,14 @@
       {% for product in products %}
         <article class="flex h-full flex-col justify-between rounded-lg bg-neutral-900 p-4 shadow-md hover:bg-neutral-800 transition">
           <div class="space-y-3">
-            <div class="flex items-center justify-center mb-1">
-              <img src="https://img.freepik.com/free-icon/shopping-cart_318-1981.jpg?w=64" alt="Фото" class="w-24 h-24 object-cover bg-neutral-800 rounded-lg shadow-inner"/>
+            <div class="flex items-center justify-center mb-1 overflow-hidden rounded-lg">
+              {% if product.product_photos.all %}
+                <img src="{{ product.product_photos.all.0.photo.url }}" alt="{{ product.title }}" class="w-24 h-24 object-cover bg-neutral-800 rounded-lg shadow-inner"/>
+              {% elif product.thumbnail %}
+                <img src="{{ product.thumbnail.url }}" alt="{{ product.title }}" class="w-24 h-24 object-cover bg-neutral-800 rounded-lg shadow-inner"/>
+              {% else %}
+                <div class="w-24 h-24 flex items-center justify-center bg-neutral-800 rounded-lg text-white/50 text-xs">Нет фото</div>
+              {% endif %}
             </div>
             <div class="space-y-1">
               <p class="text-xs uppercase tracking-wide text-white/50">{{ product.category }}</p>
@@ -46,9 +52,16 @@
               <p class="text-sm text-white/60 line-clamp-2">{{ product.description }}</p>
             </div>
           </div>
-          <div class="mt-3 flex items-center justify-between">
-            <div class="text-lg font-semibold text-white">{{ product.price }} ₽</div>
-            <a href="{% url 'product_detail' product.id %}" class="inline-block rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-400">Узнать подробнее</a>
+          <div class="mt-3 space-y-2">
+            <div class="flex items-center justify-between">
+              <div class="text-lg font-semibold text-white">{{ product.price }} ₽</div>
+              {% if product.stock > 0 %}
+                <span class="text-xs text-green-400">В наличии: {{ product.stock }} шт.</span>
+              {% else %}
+                <span class="text-xs text-red-400">Нет в наличии</span>
+              {% endif %}
+            </div>
+            <a href="{% url 'product_detail' product.id %}" class="inline-block w-full text-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-400">Узнать подробнее</a>
           </div>
         </article>
       {% empty %}

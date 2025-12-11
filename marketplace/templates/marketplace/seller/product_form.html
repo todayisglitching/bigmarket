@@ -1,0 +1,147 @@
+{% extends "marketplace/base.html" %}
+
+{% block title %}{{ title }} | BigMarket{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+  <h1 class="text-3xl font-semibold tracking-tight text-white">{{ title }}</h1>
+  <p class="text-sm text-white/60">Заполните форму для создания продукта</p>
+</div>
+
+{% if messages %}
+  <div class="mb-6 space-y-2">
+    {% for message in messages %}
+      <div class="p-4 rounded-lg {% if message.tags == 'error' %}bg-red-900/50 text-red-200{% elif message.tags == 'success' %}bg-green-900/50 text-green-200{% else %}bg-blue-900/50 text-blue-200{% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<form method="post" enctype="multipart/form-data" class="space-y-6">
+  {% csrf_token %}
+  
+  <div class="rounded-lg border border-white/10 bg-neutral-900 p-6 shadow-sm">
+    <h2 class="mb-4 text-lg font-semibold text-white">Основная информация</h2>
+    
+    <div class="space-y-4">
+      <div>
+        <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium text-white/80 mb-2">
+          {{ form.title.label }} <span class="text-red-400">*</span>
+        </label>
+        {{ form.title }}
+        {% if form.title.errors %}
+          <div class="mt-1 text-sm text-red-400">{{ form.title.errors }}</div>
+        {% endif %}
+        {% if form.title.help_text %}
+          <p class="mt-1 text-xs text-white/50">{{ form.title.help_text }}</p>
+        {% endif %}
+      </div>
+
+      <div>
+        <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-white/80 mb-2">
+          {{ form.description.label }} <span class="text-red-400">*</span>
+        </label>
+        {{ form.description }}
+        {% if form.description.errors %}
+          <div class="mt-1 text-sm text-red-400">{{ form.description.errors }}</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-white/10 bg-neutral-900 p-6 shadow-sm">
+    <h2 class="mb-4 text-lg font-semibold text-white">Цена и наличие</h2>
+    
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label for="{{ form.price.id_for_label }}" class="block text-sm font-medium text-white/80 mb-2">
+          {{ form.price.label }} <span class="text-red-400">*</span>
+        </label>
+        {{ form.price }}
+        {% if form.price.errors %}
+          <div class="mt-1 text-sm text-red-400">{{ form.price.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div>
+        <label for="{{ form.stock.id_for_label }}" class="block text-sm font-medium text-white/80 mb-2">
+          {{ form.stock.label }} <span class="text-red-400">*</span>
+        </label>
+        {{ form.stock }}
+        {% if form.stock.errors %}
+          <div class="mt-1 text-sm text-red-400">{{ form.stock.errors }}</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-white/10 bg-neutral-900 p-6 shadow-sm">
+    <h2 class="mb-4 text-lg font-semibold text-white">Медиа</h2>
+    
+    <div>
+      <label for="{{ form.thumbnail.id_for_label }}" class="block text-sm font-medium text-white/80 mb-2">
+        {{ form.thumbnail.label }}
+      </label>
+      {% if product and product.thumbnail %}
+        <div class="mb-2">
+          <p class="mb-2 text-sm text-white/60">Текущая миниатюра:</p>
+          <img src="{{ product.thumbnail.url }}" alt="Миниатюра" class="h-32 w-32 rounded-lg object-cover"/>
+        </div>
+      {% endif %}
+      {{ form.thumbnail }}
+      {% if form.thumbnail.errors %}
+        <div class="mt-1 text-sm text-red-400">{{ form.thumbnail.errors }}</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-white/10 bg-neutral-900 p-6 shadow-sm">
+    <h2 class="mb-4 text-lg font-semibold text-white">Теги</h2>
+    
+    <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      {% for tag in form.tags %}
+        <div class="flex items-center space-x-2">
+          {{ tag.tag }}
+          <label for="{{ tag.id_for_label }}" class="text-sm text-white/80">
+            {{ tag.choice_label }}
+          </label>
+        </div>
+      {% endfor %}
+    </div>
+    {% if form.tags.errors %}
+      <div class="mt-2 text-sm text-red-400">{{ form.tags.errors }}</div>
+    {% endif %}
+  </div>
+
+  {% if form.non_field_errors %}
+    <div class="rounded-lg bg-red-900/50 p-4 text-red-200">
+      {{ form.non_field_errors }}
+    </div>
+  {% endif %}
+
+  <div class="flex gap-4">
+    <button type="submit" class="rounded-lg bg-blue-700 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-800 transition">
+      {% if product %}Сохранить изменения{% else %}Создать продукт{% endif %}
+    </button>
+    <a href="{% url 'seller_products' %}" class="rounded-lg border border-white/10 px-6 py-3 text-sm font-semibold text-white transition hover:border-white">
+      Отмена
+    </a>
+    {% if product %}
+      <form method="post" action="{% url 'seller_product_delete' product.id %}" class="ml-auto">
+        {% csrf_token %}
+        <button type="submit" onclick="return confirm('Вы уверены, что хотите удалить этот продукт?')" class="rounded-lg bg-red-700 px-6 py-3 text-sm font-semibold text-white hover:bg-red-800 transition">
+          Удалить
+        </button>
+      </form>
+    {% endif %}
+  </div>
+</form>
+
+<div class="mt-6 rounded-lg border border-blue-500/50 bg-blue-900/20 p-4">
+  <p class="text-sm text-blue-200">
+    <strong>Важно:</strong> После создания продукт будет отправлен на проверку администратору. 
+    Только после проверки продукт станет виден клиентам.
+  </p>
+</div>
+{% endblock %}

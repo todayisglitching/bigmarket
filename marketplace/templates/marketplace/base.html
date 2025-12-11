@@ -37,12 +37,48 @@
         {% include "marketplace/parts/logo_pair.html" %}
       </div>
       <div class="flex w-full items-center justify-end gap-4">
-        <button class="flex cursor-pointer items-center gap-2 text-white/50 transition-all hover:text-white">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="text-white h-6 w-6">
-            <path fill-rule="evenodd" d="M18.685 19.097A9.723 9.723 0 0 0 21.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 0 0 3.065 7.097A9.716 9.716 0 0 0 12 21.75a9.716 9.716 0 0 0 6.685-2.653Zm-12.54-1.285A7.486 7.486 0 0 1 12 15a7.486 7.486 0 0 1 5.855 2.812A8.224 8.224 0 0 1 12 20.25a8.224 8.224 0 0 1-5.855-2.438ZM15.75 9a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" clip-rule="evenodd" />
-          </svg>
-          <span>Войти</span>
-        </button>
+        {% if request.session.client_id or request.session.seller_id %}
+          <div class="flex items-center gap-4">
+            {% if request.session.client_id %}
+              <a href="{% url 'cart' %}" class="flex cursor-pointer items-center gap-2 text-white/50 transition-all hover:text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5">
+                  <path d="M2.25 2.25a.75.75 0 0 0 0 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 0 0-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 0 0 .75-.75 3.75 3.75 0 0 0-3.75-3.75H6.23l1.47-5.5h11.797a.75.75 0 0 0 .728-.495l2.25-6a.75.75 0 0 0-.728-.945H4.636l.75-2.808A.75.75 0 0 0 4.036 2.25H2.25Z" />
+                </svg>
+                <span>Корзина</span>
+              </a>
+              <span class="text-white/70 text-sm">Клиент: {{ request.session.client_name|default:request.session.client_email }}</span>
+            {% elif request.session.seller_id %}
+              <a href="{% url 'seller_dashboard' %}" class="flex cursor-pointer items-center gap-2 text-white/50 transition-all hover:text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5">
+                  <path fill-rule="evenodd" d="M3 6a3 3 0 0 1 3-3h2.25a3 3 0 0 1 3 3v2.25a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6Zm9.75 0a3 3 0 0 1 3-3H18a3 3 0 0 1 3 3v2.25a3 3 0 0 1-3 3h-2.25a3 3 0 0 1-3-3V6ZM3 15.75a3 3 0 0 1 3-3h2.25a3 3 0 0 1 3 3V18a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-2.25Zm9.75 0a3 3 0 0 1 3-3H18a3 3 0 0 1 3 3V18a3 3 0 0 1-3 3h-2.25a3 3 0 0 1-3-3v-2.25Z" clip-rule="evenodd" />
+                </svg>
+                <span>Панель</span>
+              </a>
+              <span class="text-white/70 text-sm">Продавец: {{ request.session.seller_company|default:request.session.seller_email }}</span>
+            {% endif %}
+            <a href="{% url 'logout' %}" class="flex cursor-pointer items-center gap-2 text-white/50 transition-all hover:text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="text-white h-5 w-5">
+                <path fill-rule="evenodd" d="M16.5 3.75a1.5 1.5 0 0 1 1.5 1.5v13.5a1.5 1.5 0 0 1-1.5 1.5h-6a1.5 1.5 0 0 1-1.5-1.5V15a.75.75 0 0 0-1.5 0v4.5a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V5.25a3 3 0 0 0-3-3h-6a3 3 0 0 0-3 3V9a.75.75 0 0 0 1.5 0V5.25a1.5 1.5 0 0 1 1.5-1.5h6Zm-5.03 4.72a.75.75 0 0 0 0 1.06l1.72 1.72H2.25a.75.75 0 0 0 0 1.5h10.94l-1.72 1.72a.75.75 0 1 0 1.06 1.06l3-3a.75.75 0 0 0 0-1.06l-3-3a.75.75 0 0 0-1.06 0Z" clip-rule="evenodd" />
+              </svg>
+              <span>Выйти</span>
+            </a>
+          </div>
+        {% else %}
+          <div class="flex items-center gap-4">
+            <a href="{% url 'client_login' %}" class="flex cursor-pointer items-center gap-2 text-white/50 transition-all hover:text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="text-white h-6 w-6">
+                <path fill-rule="evenodd" d="M18.685 19.097A9.723 9.723 0 0 0 21.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 0 0 3.065 7.097A9.716 9.716 0 0 0 12 21.75a9.716 9.716 0 0 0 6.685-2.653Zm-12.54-1.285A7.486 7.486 0 0 1 12 15a7.486 7.486 0 0 1 5.855 2.812A8.224 8.224 0 0 1 12 20.25a8.224 8.224 0 0 1-5.855-2.438ZM15.75 9a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" clip-rule="evenodd" />
+              </svg>
+              <span>Войти (Клиент)</span>
+            </a>
+            <a href="{% url 'seller_login' %}" class="flex cursor-pointer items-center gap-2 text-white/50 transition-all hover:text-white">
+              <span>Войти (Продавец)</span>
+            </a>
+            <a href="{% url 'client_register' %}" class="px-4 py-2 rounded-lg bg-blue-700 text-white text-sm font-semibold hover:bg-blue-800 transition">
+              Регистрация
+            </a>
+          </div>
+        {% endif %}
       </div>
     </div>
 
