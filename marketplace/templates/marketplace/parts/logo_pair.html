@@ -1,3 +1,4 @@
-<div class="logo-font text-[2.5rem] leading-none text-white whitespace-nowrap">
-  ДЭЛЭЙ МАРКЕТ
-</div>
+{% load static %}
+<a href="{% url 'index' %}" class="flex items-center">
+  <img src="{% static 'logo/logo.jpg' %}" alt="Дэлэй Маркет" class="h-12 w-auto object-contain">
+</a>

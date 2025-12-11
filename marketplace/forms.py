@@ -144,12 +144,14 @@ class SellerLoginForm(forms.Form):
 class ProductForm(forms.ModelForm):
     """Форма для создания и редактирования продукта продавцом"""
     tags = forms.ModelMultipleChoiceField(
-        queryset=Tag.objects.all(),
+        queryset=Tag.objects.all().order_by('tagtitle'),
         required=False,
-        widget=forms.CheckboxSelectMultiple(attrs={
-            'class': 'space-y-2'
+        widget=forms.SelectMultiple(attrs={
+            'class': 'w-full px-4 py-2 rounded-lg bg-neutral-950 border border-neutral-800 focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-white outline-none transition',
+            'size': '8'
         }),
-        label='Теги'
+        label='Теги',
+        help_text='Выберите теги (удерживайте Ctrl/Cmd для множественного выбора)'
     )
     
     class Meta:

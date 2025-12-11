@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_protect
-from django.db.models import Count, Q
-from .models import Seller, Product, Tag
+from django.db.models import Max
+from .models import Seller, Product, ProductPhoto
 from .forms import ProductForm
 
 
@@ -18,26 +18,27 @@ def seller_dashboard(request):
     try:
         seller = Seller.objects.get(id=request.session['seller_id'])
         
+        # Оптимизированные запросы
+        products_qs = Product.objects.filter(seller=seller)
+        
         # Статистика
-        total_products = Product.objects.filter(seller=seller).count()
-        checked_products = Product.objects.filter(seller=seller, checked=True).count()
-        unchecked_products = Product.objects.filter(seller=seller, checked=False).count()
+        total_products = products_qs.count()
+        checked_products = products_qs.filter(checked=True).count()
+        unchecked_products = total_products - checked_products
         
         # Последние продукты
-        recent_products = Product.objects.filter(seller=seller).order_by('-created_at')[:5]
+        recent_products = products_qs.select_related('seller').prefetch_related('tags', 'product_photos').order_by('-created_at')[:5]
         
         # Продукты с низким остатком
-        low_stock_products = Product.objects.filter(
-            seller=seller,
+        low_stock_products = products_qs.filter(
             stock__lte=10,
             stock__gt=0
-        ).order_by('stock')[:5]
+        ).select_related('seller').prefetch_related('tags', 'product_photos').order_by('stock')[:5]
         
         # Продукты без остатка
-        out_of_stock_products = Product.objects.filter(
-            seller=seller,
+        out_of_stock_products = products_qs.filter(
             stock=0
-        )[:5]
+        ).select_related('seller').prefetch_related('tags', 'product_photos')[:5]
         
         context = {
             'seller': seller,
@@ -107,6 +108,21 @@ def seller_product_create(request):
                 product.checked = False  # Всегда False при создании
                 product.save()
                 form.save_m2m()  # Сохраняем теги
+                
+                # Обработка дополнительных фотографий
+                photos = request.FILES.getlist('photos')
+                if photos:
+                    max_order = ProductPhoto.objects.filter(product=product).aggregate(
+                        max_order=Max('order')
+                    )['max_order']
+                    start_order = (max_order + 1) if max_order is not None else 0
+                    for idx, photo_file in enumerate(photos):
+                        ProductPhoto.objects.create(
+                            product=product,
+                            photo=photo_file,
+                            order=start_order + idx
+                        )
+                
                 messages.success(request, f'Продукт "{product.title}" успешно создан и отправлен на проверку')
                 return redirect('seller_products')
         else:
@@ -144,6 +160,21 @@ def seller_product_edit(request, product_id):
                 # checked не изменяется через форму
                 product.save()
                 form.save_m2m()  # Сохраняем теги
+                
+                # Обработка дополнительных фотографий
+                photos = request.FILES.getlist('photos')
+                if photos:
+                    max_order = ProductPhoto.objects.filter(product=product).aggregate(
+                        max_order=Max('order')
+                    )['max_order']
+                    start_order = (max_order + 1) if max_order is not None else 0
+                    for idx, photo_file in enumerate(photos):
+                        ProductPhoto.objects.create(
+                            product=product,
+                            photo=photo_file,
+                            order=start_order + idx
+                        )
+                
                 messages.success(request, f'Продукт "{product.title}" успешно обновлен')
                 return redirect('seller_products')
         else:

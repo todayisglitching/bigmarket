@@ -45,7 +45,11 @@
               {% endif %}
             </div>
             <div class="space-y-1">
-              <p class="text-xs uppercase tracking-wide text-white/50">{{ product.category }}</p>
+              {% if product.tags.all %}
+                <p class="text-xs uppercase tracking-wide text-white/50">
+                  {% for tag in product.tags.all|slice:":1" %}{{ tag.tagtitle }}{% endfor %}
+                </p>
+              {% endif %}
               <h3 class="text-lg font-semibold leading-snug">
                 <a href="{% url 'product_detail' product.id %}" class="hover:text-white">{{ product.title }}</a>
               </h3>

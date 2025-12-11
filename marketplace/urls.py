@@ -18,6 +18,7 @@ router.register(r'api/tags', TagViewSet, basename='tag')
 urlpatterns = [
     # Веб-страницы
     path("", views.index, name="index"),
+    path("catalog/", views.catalog, name="catalog"),
     path("products/<int:product_id>/", views.product_detail, name="product_detail"),
     
     # Веб-формы аутентификации

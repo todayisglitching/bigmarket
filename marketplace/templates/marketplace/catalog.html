@@ -1,0 +1,215 @@
+{% extends "marketplace/base.html" %}
+
+{% block title %}Каталог | BigMarket{% endblock %}
+
+{% block content %}
+<div class="space-y-6 text-white">
+  <div class="mb-6">
+    <h1 class="text-3xl font-semibold tracking-tight text-white">Каталог товаров</h1>
+    <p class="text-sm text-white/60">Найдите нужный товар с помощью поиска и фильтров</p>
+  </div>
+
+  <!-- Форма поиска и фильтров -->
+  <form method="get" action="{% url 'catalog' %}" class="space-y-4">
+    <!-- Поиск -->
+    <div class="rounded-lg border border-white/10 bg-neutral-900 p-4">
+      <label for="search" class="block text-sm font-medium text-white/80 mb-2">Поиск</label>
+      <div class="flex gap-2">
+        <input 
+          type="search" 
+          name="q" 
+          id="search"
+          value="{{ search_query }}"
+          placeholder="Введите название или описание товара..."
+          class="flex-1 px-4 py-2 rounded-lg bg-neutral-950 border border-neutral-800 focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-white placeholder:text-white/40 outline-none transition"
+          autocomplete="off"
+        >
+        <button type="submit" class="px-6 py-2 rounded-lg bg-blue-700 text-white font-semibold hover:bg-blue-800 transition">
+          Найти
+        </button>
+      </div>
+    </div>
+
+    <!-- Фильтры -->
+    <div class="grid gap-4 lg:grid-cols-4">
+      <!-- Левая колонка с фильтрами -->
+      <div class="lg:col-span-1 space-y-4">
+        <div class="rounded-lg border border-white/10 bg-neutral-900 p-4">
+          <h2 class="text-lg font-semibold text-white mb-4">Фильтры</h2>
+          
+          <!-- Фильтр по тегам -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-white/80 mb-2">Теги</label>
+            <div class="space-y-2 max-h-48 overflow-y-auto">
+              {% for item in tags_with_counts %}
+                <label class="flex items-center space-x-2 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    name="tags" 
+                    value="{{ item.tag.id }}"
+                    {% if item.tag.id in selected_tags %}checked{% endif %}
+                    class="rounded border-neutral-700 bg-neutral-950 text-blue-600 focus:ring-blue-500"
+                  >
+                  <span class="text-sm text-white/80">
+                    {{ item.tag.tagtitle }} ({{ item.count }})
+                  </span>
+                </label>
+              {% empty %}
+                <p class="text-sm text-white/60">Теги не найдены</p>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Фильтр по цене -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-white/80 mb-2">Цена (₽)</label>
+            <div class="grid grid-cols-2 gap-2">
+              <input 
+                type="number" 
+                name="min_price" 
+                value="{{ min_price }}"
+                placeholder="От"
+                min="0"
+                step="0.01"
+                class="px-3 py-2 rounded-lg bg-neutral-950 border border-neutral-800 focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-white placeholder:text-white/40 outline-none transition text-sm"
+              >
+              <input 
+                type="number" 
+                name="max_price" 
+                value="{{ max_price }}"
+                placeholder="До"
+                min="0"
+                step="0.01"
+                class="px-3 py-2 rounded-lg bg-neutral-950 border border-neutral-800 focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-white placeholder:text-white/40 outline-none transition text-sm"
+              >
+            </div>
+          </div>
+
+          <!-- Фильтр по наличию -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-white/80 mb-2">Наличие</label>
+            <label class="flex items-center space-x-2 cursor-pointer">
+              <input 
+                type="checkbox" 
+                name="in_stock" 
+                value="true"
+                {% if in_stock == 'true' %}checked{% endif %}
+                class="rounded border-neutral-700 bg-neutral-950 text-blue-600 focus:ring-blue-500"
+              >
+              <span class="text-sm text-white/80">Только в наличии</span>
+            </label>
+          </div>
+
+          <!-- Кнопки фильтров -->
+          <div class="flex gap-2">
+            <button type="submit" class="flex-1 px-4 py-2 rounded-lg bg-blue-700 text-white text-sm font-semibold hover:bg-blue-800 transition">
+              Применить
+            </button>
+            <a href="{% url 'catalog' %}" class="px-4 py-2 rounded-lg border border-white/10 text-white text-sm font-semibold hover:border-white transition">
+              Сбросить
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Правая колонка с товарами -->
+      <div class="lg:col-span-3">
+        <!-- Сортировка -->
+        <div class="mb-4 flex items-center justify-between">
+          <p class="text-sm text-white/60">
+            Найдено товаров: <span class="text-white font-semibold">{{ products|length }}</span>
+          </p>
+          <div class="flex items-center gap-2">
+            <label for="sort" class="text-sm text-white/60">Сортировка:</label>
+            <form method="get" action="{% url 'catalog' %}" class="flex items-center gap-2">
+              <!-- Сохраняем текущие фильтры -->
+              {% if search_query %}
+                <input type="hidden" name="q" value="{{ search_query }}">
+              {% endif %}
+              {% for tag_id in selected_tags %}
+                <input type="hidden" name="tags" value="{{ tag_id }}">
+              {% endfor %}
+              {% if min_price %}
+                <input type="hidden" name="min_price" value="{{ min_price }}">
+              {% endif %}
+              {% if max_price %}
+                <input type="hidden" name="max_price" value="{{ max_price }}">
+              {% endif %}
+              {% if in_stock == 'true' %}
+                <input type="hidden" name="in_stock" value="true">
+              {% endif %}
+              <select 
+                name="sort" 
+                id="sort"
+                onchange="this.form.submit()"
+                class="px-3 py-2 rounded-lg bg-neutral-950 border border-neutral-800 focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-white outline-none transition text-sm"
+              >
+                <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Сначала новые</option>
+                <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Цена: по возрастанию</option>
+                <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Цена: по убыванию</option>
+                <option value="name" {% if sort_by == 'name' %}selected{% endif %}>По названию</option>
+              </select>
+            </form>
+          </div>
+        </div>
+
+        <!-- Список товаров -->
+        {% if products %}
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {% for product in products %}
+              <article class="flex h-full flex-col justify-between rounded-lg bg-neutral-900 p-4 shadow-md hover:bg-neutral-800 transition">
+                <div class="space-y-3">
+                  <div class="flex items-center justify-center mb-1 overflow-hidden rounded-lg">
+                    {% if product.product_photos.all %}
+                      <img src="{{ product.product_photos.all.0.photo.url }}" alt="{{ product.title }}" class="w-full h-48 object-cover bg-neutral-800 rounded-lg shadow-inner"/>
+                    {% elif product.thumbnail %}
+                      <img src="{{ product.thumbnail.url }}" alt="{{ product.title }}" class="w-full h-48 object-cover bg-neutral-800 rounded-lg shadow-inner"/>
+                    {% else %}
+                      <div class="w-full h-48 flex items-center justify-center bg-neutral-800 rounded-lg text-white/50 text-xs">Нет фото</div>
+                    {% endif %}
+                  </div>
+                  <div class="space-y-1">
+                    {% if product.tags.all %}
+                      <p class="text-xs uppercase tracking-wide text-white/50">
+                        {% for tag in product.tags.all|slice:":2" %}
+                          {{ tag.tagtitle }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                      </p>
+                    {% endif %}
+                    <h3 class="text-lg font-semibold leading-snug">
+                      <a href="{% url 'product_detail' product.id %}" class="hover:text-white">{{ product.title }}</a>
+                    </h3>
+                    <p class="text-sm text-white/60 line-clamp-2">{{ product.description }}</p>
+                  </div>
+                </div>
+                <div class="mt-3 space-y-2">
+                  <div class="flex items-center justify-between">
+                    <div class="text-lg font-semibold text-white">{{ product.price }} ₽</div>
+                    {% if product.stock > 0 %}
+                      <span class="text-xs text-green-400">В наличии: {{ product.stock }} шт.</span>
+                    {% else %}
+                      <span class="text-xs text-red-400">Нет в наличии</span>
+                    {% endif %}
+                  </div>
+                  <a href="{% url 'product_detail' product.id %}" class="inline-block w-full text-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-400 transition">
+                    Подробнее
+                  </a>
+                </div>
+              </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="rounded-lg border border-white/10 bg-neutral-900 p-8 text-center">
+            <p class="text-white/60 mb-2">Товары не найдены</p>
+            <p class="text-sm text-white/40">Попробуйте изменить параметры поиска или фильтры</p>
+            <a href="{% url 'catalog' %}" class="mt-4 inline-block rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800 transition">
+              Сбросить фильтры
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </form>
+</div>
+
+{% endblock %}
