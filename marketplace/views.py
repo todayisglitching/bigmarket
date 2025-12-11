@@ -47,3 +47,92 @@ def product_detail(request, product_id: int):
     }
     
     return render(request, "marketplace/product_detail.html", context)
+
+
+def catalog(request):
+    """
+    Страница каталога с поиском и фильтрами
+    """
+    products = Product.objects.filter(checked=True).select_related('seller').prefetch_related('tags', 'product_photos')
+    
+    # Поиск по названию и описанию
+    search_query = request.GET.get('q', '').strip()
+    if search_query:
+        products = products.filter(
+            Q(title__icontains=search_query) | Q(description__icontains=search_query)
+        )
+    
+    # Фильтр по тегам
+    # В GET-запросе неотмеченные чекбоксы не отправляются
+    # Поэтому selected_tags будет содержать только отмеченные чекбоксы
+    tag_ids = request.GET.getlist('tags')
+    valid_tag_ids = []
+    
+    # Преобразуем в список целых чисел
+    for tid in tag_ids:
+        try:
+            tag_id = int(tid)
+            if tag_id > 0:  # Проверяем, что ID валидный
+                valid_tag_ids.append(tag_id)
+        except (ValueError, TypeError):
+            continue
+    
+    # Применяем фильтр только если есть выбранные теги
+    if valid_tag_ids:
+        products = products.filter(tags__id__in=valid_tag_ids).distinct()
+    
+    # Фильтр по цене
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    if min_price:
+        try:
+            products = products.filter(price__gte=float(min_price))
+        except (ValueError, TypeError):
+            pass
+    if max_price:
+        try:
+            products = products.filter(price__lte=float(max_price))
+        except (ValueError, TypeError):
+            pass
+    
+    # Фильтр по наличию
+    in_stock = request.GET.get('in_stock', '')
+    if in_stock == 'true':
+        products = products.filter(stock__gt=0)
+    
+    # Сортировка
+    sort_by = request.GET.get('sort', 'newest')
+    if sort_by == 'price_asc':
+        products = products.order_by('price')
+    elif sort_by == 'price_desc':
+        products = products.order_by('-price')
+    elif sort_by == 'name':
+        products = products.order_by('title')
+    else:  # newest (по умолчанию)
+        products = products.order_by('-created_at')
+    
+    # Получаем все теги для фильтров с количеством продуктов
+    all_tags = Tag.objects.all().order_by('tagtitle')
+    
+    # Подсчитываем количество продуктов для каждого тега
+    tags_with_counts = []
+    for tag in all_tags:
+        count = Product.objects.filter(checked=True, tags=tag).count()
+        if count > 0:
+            tags_with_counts.append({
+                'tag': tag,
+                'count': count
+            })
+    
+    context = {
+        'products': products,
+        'tags_with_counts': tags_with_counts,
+        'search_query': search_query,
+        'selected_tags': valid_tag_ids,  # Список только отмеченных тегов из GET-запроса
+        'min_price': min_price or '',
+        'max_price': max_price or '',
+        'in_stock': in_stock,
+        'sort_by': sort_by,
+    }
+    
+    return render(request, "marketplace/catalog.html", context)

@@ -79,19 +79,54 @@
   <div class="rounded-lg border border-white/10 bg-neutral-900 p-6 shadow-sm">
     <h2 class="mb-4 text-lg font-semibold text-white">Медиа</h2>
     
-    <div>
-      <label for="{{ form.thumbnail.id_for_label }}" class="block text-sm font-medium text-white/80 mb-2">
-        {{ form.thumbnail.label }}
-      </label>
-      {% if product and product.thumbnail %}
-        <div class="mb-2">
-          <p class="mb-2 text-sm text-white/60">Текущая миниатюра:</p>
-          <img src="{{ product.thumbnail.url }}" alt="Миниатюра" class="h-32 w-32 rounded-lg object-cover"/>
+    <div class="space-y-4">
+      <div>
+        <label for="{{ form.thumbnail.id_for_label }}" class="block text-sm font-medium text-white/80 mb-2">
+          {{ form.thumbnail.label }}
+        </label>
+        {% if product and product.thumbnail %}
+          <div class="mb-2">
+            <p class="mb-2 text-sm text-white/60">Текущая миниатюра:</p>
+            <img src="{{ product.thumbnail.url }}" alt="Миниатюра" class="h-32 w-32 rounded-lg object-cover"/>
+          </div>
+        {% endif %}
+        {{ form.thumbnail }}
+        {% if form.thumbnail.errors %}
+          <div class="mt-1 text-sm text-red-400">{{ form.thumbnail.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div>
+        <label for="photos" class="block text-sm font-medium text-white/80 mb-2">
+          Дополнительные фотографии
+        </label>
+        <input 
+          type="file" 
+          name="photos" 
+          id="photos" 
+          multiple 
+          accept="image/*"
+          class="w-full px-4 py-2 rounded-lg bg-neutral-950 border border-neutral-800 focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-white outline-none transition"
+        />
+        <p class="mt-1 text-xs text-white/50">Можно выбрать несколько файлов (удерживайте Ctrl/Cmd для множественного выбора)</p>
+      </div>
+
+      {% if product %}
+        <div>
+          <p class="mb-2 text-sm font-medium text-white/80">Текущие фотографии:</p>
+          {% if product.product_photos.all %}
+            <div class="grid grid-cols-4 gap-2">
+              {% for photo in product.product_photos.all %}
+                <div class="relative">
+                  <img src="{{ photo.photo.url }}" alt="Фото {{ forloop.counter }}" class="h-24 w-full rounded-lg object-cover"/>
+                  <span class="absolute top-1 right-1 bg-black/50 text-white text-xs px-1 rounded">{{ photo.order|add:1 }}</span>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-sm text-white/60">Нет дополнительных фотографий</p>
+          {% endif %}
         </div>
-      {% endif %}
-      {{ form.thumbnail }}
-      {% if form.thumbnail.errors %}
-        <div class="mt-1 text-sm text-red-400">{{ form.thumbnail.errors }}</div>
       {% endif %}
     </div>
   </div>
@@ -99,19 +134,18 @@
   <div class="rounded-lg border border-white/10 bg-neutral-900 p-6 shadow-sm">
     <h2 class="mb-4 text-lg font-semibold text-white">Теги</h2>
     
-    <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-      {% for tag in form.tags %}
-        <div class="flex items-center space-x-2">
-          {{ tag.tag }}
-          <label for="{{ tag.id_for_label }}" class="text-sm text-white/80">
-            {{ tag.choice_label }}
-          </label>
-        </div>
-      {% endfor %}
+    <div>
+      <label for="{{ form.tags.id_for_label }}" class="block text-sm font-medium text-white/80 mb-2">
+        {{ form.tags.label }}
+      </label>
+      {{ form.tags }}
+      {% if form.tags.help_text %}
+        <p class="mt-1 text-xs text-white/50">{{ form.tags.help_text }}</p>
+      {% endif %}
+      {% if form.tags.errors %}
+        <div class="mt-2 text-sm text-red-400">{{ form.tags.errors }}</div>
+      {% endif %}
     </div>
-    {% if form.tags.errors %}
-      <div class="mt-2 text-sm text-red-400">{{ form.tags.errors }}</div>
-    {% endif %}
   </div>
 
   {% if form.non_field_errors %}
